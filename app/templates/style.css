@@ -1,0 +1,38 @@
+/* Modified (poorly) from http://getbootstrap.com/ */
+/* colors: http://www.colourlovers.com/palette/292482/Terra */
+
+html {
+  background-color: #033649;
+}
+
+.masthead {
+  text-align: center;
+  margin-top: 80px;
+  padding: 80px 0 60px;
+  background-color: #036564;
+}
+
+.rigid-icon {
+  font-size: 108px;
+  font-weight: 500;
+  line-height: 140px;
+  width: 300px;
+  height: 144px;
+
+  display:block;
+  margin: 0px auto 30px;
+  border: 1px solid #FFF;
+
+  color: #FFF;
+  background-color: transparent;
+}
+
+.rigid-tagline {
+  font-size: 36px;
+  color: #031634;
+}
+
+a:link,a:visited,a:hover,a:active {
+  text-decoration: none;
+  color: #FFF;
+}

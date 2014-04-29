@@ -1,0 +1,12 @@
+{
+  "name": "<%= projName %>",
+  "version": "0.0.0",
+  "//": {
+    "fuck versioning, it's a prototype": "#YOLOSWAG #AGILE #COWBOYNINJA #ROCKSTAR"
+  },
+  "dependencies": {
+    "bootstrap": null,
+    "underscore": null,
+    "jquery": null
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "generator-rigid",
+  "version": "0.0.0",
+  "description": "Yeoman generator",
+  "license": "MIT",
+  "main": "app/index.js",
+  "repository": "numberoverzero/generator-rigid",
+  "author": {
+    "name": "Joe Cross",
+    "email": "joe.mcross@gmail.com",
+    "url": "https://github.com/numberoverzero"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "files": [
+    "app"
+  ],
+  "keywords": [
+    "yeoman-generator",
+    "static",
+    "minimal"
+  ],
+  "dependencies": {
+    "yeoman-generator": "~0.16.0",
+    "chalk": "~0.4.0",
+    "octonode": "0.4.1",
+    "q": "~0.9.7"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "peerDependencies": {
+    "yo": ">=1.0.0"
+  }
+}
