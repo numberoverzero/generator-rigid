@@ -3,6 +3,7 @@
 
 html {
   background-color: #033649;
+  animation: fadeBackground 3s ease;
 }
 
 .masthead {
@@ -10,29 +11,65 @@ html {
   margin-top: 80px;
   padding: 80px 0 60px;
   background-color: #036564;
+  animation: fadeMasthead 3s ease;
 }
 
 .rigid-icon {
   font-size: 108px;
   font-weight: 500;
-  line-height: 140px;
-  width: 300px;
-  height: 144px;
-
-  display:block;
-  margin: 0px auto 30px;
-  border: 1px solid #FFF;
-
-  color: #FFF;
+  display: inline-block;
+  margin: 0px auto 0px;
+  color: inherit;
   background-color: transparent;
+  animation: fadeIcon 3s ease;
 }
 
 .rigid-tagline {
   font-size: 36px;
-  color: #031634;
+  color: inherit;
+  animation: fadeTagline 3s ease;
 }
 
-a:link,a:visited,a:hover,a:active {
-  text-decoration: none;
+/* Enter in stages */
+
+@keyframes fadeBackground {
+  0% {background-color: #000;}
+  35% {background-color: #033649;}
+}
+
+@keyframes fadeMasthead {
+  0% {background-color: #000;}
+  35% {background-color: #033649;}
+  55% {background-color: #036564;}
+}
+
+@keyframes fadeIcon {
+  0% {color: #000;}
+  35% {color: #033649;}
+  55% {color: #036564;}
+  80% {color: #031634;}
+}
+
+@keyframes fadeTagline {
+  0% {color: #000;}
+  35% {color: #033649;}
+  55% {color: #036564;}
+  70% {color: #036564;}
+  75% {color: #036564;}
+  90% {color: #036564;}
+  100% {color: #031634;}
+}
+
+/* Hover title/tagline */
+.h {
+  color: #031634;
+  display: inline-block;
+}
+
+.h:hover{
   color: #FFF;
+}
+
+a, a:hover{
+  color: inherit;
 }
