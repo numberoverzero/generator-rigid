@@ -1,41 +1,49 @@
 'use strict';
-var fs = require('fs');
-var util = require('util');
-var path = require('path');
-var yeoman = require('yeoman-generator');
-var chalk = require('chalk');
-var github = require('octonode');
-var q = require('q');
+var fs = require('fs'),
+    util = require('util'),
+    path = require('path'),
+    yeoman = require('yeoman-generator'),
+    chalk = require('chalk'),
+    github = require('octonode'),
+    q = require('q'),
+    command;
 
 function gitCommand() {
-  var deferred = q.defer();
   var args = Array.prototype.slice.call(arguments);
-  this.log(chalk.bold('git ' + args.join(' ')));
-
-  this.spawnCommand('git', args)
-   .on('error', onError)
-   .on('exit', function (err) {
-     if (err) { onError(err); }
-     else { deferred.resolve(); }
-   });
-
-   function onError(err) {
-     throw new Error('Failed to run git command: ' + err);
-   }
-
+  var cmd = 'git ' + args.join(' ');
+  var deferred = q.defer();
+  this.log(chalk.bold(cmd));
+  command('git', args)
+  .on('error', onError)
+  .on('exit', function (err) {
+    if (err) { onError(err); }
+    else {
+     deferred.resolve();
+    }
+  });
+  function onError(err) {
+    throw new Error('git command failed: ' + err);
+  }
   return deferred.promise;
 }
 
 var RigidGenerator = yeoman.generators.Base.extend({
   init: function () {
     this.pkg = require('../package.json');
-    this.gitCommand = gitCommand.bind(this);
+    command = this.spawnCommand;
 
     this.on('end', function () {
-      if (!this.options['skip-install']) {
-        this.installDependencies();
-      }
+      this.installDependencies({
+        skipInstall: this.options['skip-install'],
+        callback: function() {
+          this.emit('dependenciesInstalled');
+        }.bind(this)
+      });
     });
+
+    this.on('dependenciesInstalled', function() {
+      //this.spawnCommand('grunt');
+    })
   },
 
   askFor: function () {
@@ -50,7 +58,7 @@ var RigidGenerator = yeoman.generators.Base.extend({
     var prompts = [{
       name: 'projName',
       message: 'What is this prototype called?',
-      default: 'demo'
+      default: process.cwd().split(path.sep).pop()
     },
     {
       type: 'confirm',
@@ -93,48 +101,6 @@ var RigidGenerator = yeoman.generators.Base.extend({
     }.bind(this));
   },
 
-  createGithubRepository: function() {
-    if(!this.githubRepo.create) {
-      return;
-    }
-
-    // Try to get a github Personal access token https://github.com/settings/applications
-    var token = fs.readFileSync(this.githubRepo.tokenFile, 'utf8').trim();
-    if(!token) {
-      this.log(
-        chalk.yellow.bold(
-          'Failed to read token. Expected single line with token at ('
-            + this.githubRepo.tokenFile
-            + ').'
-        )
-      );
-      return; // No token means we can't continue
-    }
-
-    // Create a repository!
-    var self = this;
-    var done = this.async();
-    var client = github.client(token);
-    var ghme = client.me();
-    ghme.repo({
-      'name': this.githubRepo.name
-    }, function (err, data, headers) {
-      if(err) {
-        self.log(chalk.yellow.bold('Failed to create GitHub Repository: ' + err));
-      } else {
-        self.githubRepo.created = true;
-        self.githubRepo.url = data.ssh_url;
-        self.githubRepo.fullName = data.full_name;
-        self.log(chalk.green('Successfully created GitHub Repository ' + data.full_name));
-      }
-      done();
-    });
-  },
-
-  setTitle: function() {
-    this.title = this.githubRepo.created ? this.githubRepo.fullName : this.projName;
-  },
-
   app: function () {
     this.mkdir('app');
     'js css img'.split(' ').forEach(function(folder) {
@@ -157,31 +123,60 @@ var RigidGenerator = yeoman.generators.Base.extend({
     this.copy('jshintrc', '.jshintrc');
   },
 
-  commitGithubRepository: function() {
-    if(!this.githubRepo.created) {
+  createGithubRepository: function() {
+    console.log('START createGithubRepository');
+    if(!this.githubRepo.create) {
       return;
     }
 
-    var doneCommit = this.async();
-
-    function isRepository() {
-      try {
-        var stats = fs.lstatSync('.git');
-        return stats && stats.isDirectory();
-      } catch (e) { return false; }
+    // Try to get a github Personal access token https://github.com/settings/applications
+    var token = fs.readFileSync(this.githubRepo.tokenFile, 'utf8').trim();
+    if(!token) {
+      this.log(
+        chalk.red.bold(
+          'Failed to read token. Expected single line with token at ('
+            + this.githubRepo.tokenFile
+            + ').'
+        )
+      );
+      return; // No token means we can't continue
     }
-    function complete() { doneCommit(); }
 
-    var d = q.defer();
-    var commands = [d];
-    if(!isRepository()) {
-      commands.push(this.gitCommand('init'));
+    // Create a repository!
+    var self = this;
+    var done = this.async();
+    var client = github.client(token);
+    var ghme = client.me();
+    ghme.repo({
+      'name': this.githubRepo.name
+    }, function (err, data, headers) {
+      if(err) {
+        self.log(chalk.red.bold('Failed to create GitHub Repository: ' + err));
+      } else {
+        self.githubRepo.created = true;
+        self.githubRepo.url = data.ssh_url;
+        self.githubRepo.fullName = data.full_name;
+        self.log(chalk.green('Successfully created GitHub Repository ' + data.full_name));
+      }
+      done();
+    });
+  },
+
+  setupLocalRepo : function() {
+    if(!this.githubRepo.create) {
+      return;
     }
-    commands.push(this.gitCommand('add', '-A'));
-    commands.push(this.gitCommand('commit', '-m', 'Initial commit'));
-    commands.push(this.gitCommand('remote', 'add', 'origin', this.githubRepo.url));
-    commands.push(this.gitCommand('push', '-u', 'origin', 'master'));
-    commands.reduce(q.when, q(d)).then(complete);
+    var self = this,
+        git = gitCommand.bind(self),
+        done = self.async(),
+        d = q.defer();
+    d.promise
+      .then(function() { return git('init'); })
+      .then(function() { return git('add', '-A'); })
+      .then(function() { return git('commit', '-m', 'initial commit'); })
+      .then(function() { return git('remote', 'add', 'origin', self.githubRepo.url); })
+      .then(function() { return git('push', '-u', 'origin', 'master'); })
+      .then(function() { done(); });
     d.resolve();
   }
 });
