@@ -10,6 +10,12 @@ module.exports = function (grunt) {
 
     // Watches files for changes and runs tasks based on the changed files
     watch: {
+      grunt: {
+        files: [ 'Gruntfile.js' ],
+        options: {
+          reload: true
+        }
+      },
       bower: {
         files: ['bower.json'],
         tasks: ['bowerInstall']
@@ -29,7 +35,7 @@ module.exports = function (grunt) {
         files: [
           'app/{,*/}*.html',
           //'.tmp/styles/{,*/}*.css',
-          'app/{,*/}*.{css,js}',
+          'app/{,*/}*.{js,css}',
           'app/img/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
         ]
       }
