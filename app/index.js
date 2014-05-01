@@ -124,7 +124,6 @@ var RigidGenerator = yeoman.generators.Base.extend({
   },
 
   createGithubRepository: function() {
-    console.log('START createGithubRepository');
     if(!this.githubRepo.create) {
       return;
     }
@@ -163,20 +162,39 @@ var RigidGenerator = yeoman.generators.Base.extend({
   },
 
   setupLocalRepo : function() {
-    if(!this.githubRepo.create) {
-      return;
-    }
     var self = this,
-        git = gitCommand.bind(self),
-        done = self.async(),
-        d = q.defer();
-    d.promise
-      .then(function() { return git('init'); })
-      .then(function() { return git('add', '-A'); })
-      .then(function() { return git('commit', '-m', 'initial commit'); })
-      .then(function() { return git('remote', 'add', 'origin', self.githubRepo.url); })
-      .then(function() { return git('push', '-u', 'origin', 'master'); })
-      .then(function() { done(); });
+        git = gitCommand.bind(self);
+
+    var isRepository = false;
+    try {
+      var stats = fs.lstatSync('.git');
+      isRepository = stats && stats.isDirectory();
+    } catch (e) { /* not a repository */}
+
+    var commands = [
+      ['init'],
+      ['add', '-A'],
+      ['commit', '-m', 'initial commit'],
+      ['remote', 'add', 'origin', self.githubRepo.url],
+      ['push', '-u', 'origin', 'master']
+    ];
+
+    if(isRepository) {
+      commands.shift(); // Don't init
+    }
+    if(!self.githubRepo.created) {
+      commands.pop(); // Don't add remote
+      commands.pop(); // Don't push to origin/master
+    }
+    console.log(commands);
+
+    var done = self.async(),
+        d = q.defer(),
+        n = d.promise;
+    commands.forEach(function(args) {
+      n = n.then(function() { return git.apply(self, args); });
+    });
+    n.then(function() { done();});
     d.resolve();
   }
 });

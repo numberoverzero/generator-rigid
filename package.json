@@ -1,6 +1,6 @@
 {
   "name": "generator-rigid",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Minimal generator for rapid prototyping. Creates GitHub repo, packs underscore, jquery, bootstrap",
   "license": "MIT",
   "main": "app/index.js",
