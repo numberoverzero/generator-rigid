@@ -186,7 +186,6 @@ var RigidGenerator = yeoman.generators.Base.extend({
       commands.pop(); // Don't add remote
       commands.pop(); // Don't push to origin/master
     }
-    console.log(commands);
 
     var done = self.async(),
         d = q.defer(),
